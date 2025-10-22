@@ -2,96 +2,86 @@ package com.example.ad_c5_oca.maintest;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
 
-public class Joc implements Resultat {
+public class Joc {
     private ArrayList<Jugador> jugadors;
-    private int[] casellesOca; //Posicions on hi ha Oca
-    private Random random;
-    private Scanner scanner;
-    private static final int casellaFinal = 64; //Es comença des de la casella 0.
+    private int tornActual;
+    private final int[] casellesOca;
+    private final Random random;
+    private static final int casellaFinal = 64; // La meta
 
-    public Joc() {
-        jugadors = new ArrayList<>();
-        random = new Random();
-        scanner = new Scanner(System.in);
-        inicialitzarCasellesOca();
+
+    public Joc(ArrayList<Jugador> jugadors) {
+        this.jugadors = jugadors;
+        this.random = new Random();
+        this.tornActual = 0;
+        this.casellesOca = new int[]{1, 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59};
     }
-    public void afegirJugador(Jugador jugador) {
-        jugadors.add(jugador);
+
+
+    public int tirarDau() {
+        return random.nextInt(6) + 1;
     }
-    public void inicialitzarCasellesOca() {
-        casellesOca = new int[]{1, 5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59};
+
+
+    public ResultatTorn jugarTorn(int resultatDau) {
+        Jugador jugadorActual = getJugadorActual();
+        int novaPosicio = jugadorActual.getPosicio() + resultatDau;
+        boolean haGuanyat = false;
+
+        if (novaPosicio >= casellaFinal) {
+            novaPosicio = casellaFinal;
+            haGuanyat = true;
+        }
+
+        jugadorActual.setPosicio(novaPosicio);
+
+        boolean esCasellaOca = esOca(novaPosicio);
+
+        if (!esCasellaOca && !haGuanyat) {
+            canviarTorn();
+        }
+
+        return new ResultatTorn(jugadorActual.getNom(), resultatDau, novaPosicio, esCasellaOca, haGuanyat);
     }
-    private boolean esOca(int casella) {
+
+
+    private void canviarTorn() {
+        tornActual++;
+        if (tornActual >= jugadors.size()) {
+            tornActual = 0;
+        }
+    }
+
+
+    public boolean esOca(int casella) {
         for (int oca : casellesOca) {
-            if (casella == oca){
+            if (casella == oca) {
                 return true;
             }
-        } return false;
-    }
-    private int tirarDau(){
-        return random.nextInt(6)+1;
-    }
-
-    public void inicialitzarJoc() {
-        boolean partidaAcabada = false;
-        while (!partidaAcabada) {
-            for (Jugador jugador : jugadors) {
-                System.out.println("Tira el jugador " + jugador.getNom());
-                System.out.println("Clica la tecla Enter");
-                scanner.nextLine();
-
-                int dau= tirarDau();
-                System.out.println();
-                int novaPosicio = jugador.getPosicio() + dau;
-
-                if (novaPosicio >= casellaFinal) {
-                    novaPosicio = casellaFinal;
-                    jugador.setPosicio(novaPosicio);
-                    System.out.println("Jugador:  " + jugador.getNom() + " has guanyat.");
-                    partidaAcabada = true;
-                    break;
-                }
-
-                jugador.setPosicio(novaPosicio);
-                System.out.println("Estàs a la casella " + novaPosicio);
-
-                while (esOca(jugador.getPosicio()) && jugador.getPosicio() < casellaFinal) {
-                    System.out.println("D'oca a oca i tires perquè et toca");
-                    System.out.println("Torna a clicar la tecla Enter");
-                    scanner.nextLine();
-
-
-                    dau = tirarDau();
-                    System.out.println("Has tret un " + dau);
-                    novaPosicio = jugador.getPosicio() + dau;
-
-                    if (novaPosicio >= casellaFinal) {
-                        novaPosicio = casellaFinal;
-                        jugador.setPosicio(novaPosicio);
-                        System.out.println("Jugador: " + jugador.getNom() + " has guanyat.");
-                        partidaAcabada = true;
-                        break;
-                    }
-                    jugador.setPosicio(novaPosicio);
-                    System.out.println("Estàs a la casella " + novaPosicio);
-                }
-                if (partidaAcabada) break;
-                System.out.println("Fi del teu torn. \n");
-                System.out.println("------------");
-            }
         }
+        return false;
     }
 
 
-    @Override
-    public String getGuanyador() {
-        for (Jugador jugador : jugadors) {
-            if (jugador.getPosicio() >= casellaFinal) {
-                return jugador.getNom();
-            }
+
+
+    public Jugador getJugadorActual() {
+        return jugadors.get(tornActual);
+    }
+
+
+    public Jugador getJugador(int index) {
+        return jugadors.get(index);
+    }
+
+
+    public String getNomProximJugador() {
+        int proximTorn = tornActual;
+        proximTorn++;
+        if (proximTorn >= jugadors.size()){
+            proximTorn = 0;
         }
-        return "";
+        return jugadors.get(proximTorn).getNom();
     }
 }

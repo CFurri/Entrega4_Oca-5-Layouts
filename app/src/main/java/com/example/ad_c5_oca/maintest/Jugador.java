@@ -3,8 +3,8 @@ package com.example.ad_c5_oca.maintest;
 public class Jugador extends Persona{
     private int posicio;
 
-    public Jugador(String nom, String color, int edat) {
-        super(nom, color, edat);
+    public Jugador(String nom) {
+        super(nom);
         this.posicio = 0; //Defineixo posició inicial
 
     }
@@ -19,9 +19,7 @@ public class Jugador extends Persona{
     @Override
     public String toString() {
         return "Jugador{" +
-                "nom='" + getNom() + '\'' +
-                ", posicio=" + posicio +
-                ", color='" + getColor() + '\'' +
+                "posicio=" + posicio +
                 '}';
     }
 }
