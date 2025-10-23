@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.content.Intent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,17 +23,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var joc: Joc
 
     // --- Declaració de totes les vistes ---
-    private lateinit var etJugador1: EditText
-    private lateinit var etJugador2: EditText
-    private lateinit var btnComençar: Button
+
     private lateinit var enunciatGuanyador: TextView
     private lateinit var laOca: ImageView
-    private lateinit var avisFaltaNom: TextView
     private lateinit var daus: ImageView
     private lateinit var btnTirarDau: Button
     private lateinit var tvTornJugador: TextView
     private lateinit var tvPuntuacioJ1: TextView
     private lateinit var tvPuntuacioJ2: TextView
+    private lateinit var btnReiniciar: Button
+    private lateinit var btnAbandonar: Button
+    private lateinit var nomJugador1: String // Per guardar els noms
+    private lateinit var nomJugador2: String
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,50 +47,41 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+            //Per rebre els noms!
+        nomJugador1 = intent.getStringExtra("NOM_JUGADOR_1") ?: "Jugador 1"
+        nomJugador2 = intent.getStringExtra("NOM_JUGADOR_2") ?: "Jugador 2"
+
 
         // --- Inicialització de les vistes (findViewById) ---
-        etJugador1 = findViewById(R.id.jugador1)
-        etJugador2 = findViewById(R.id.jugador2)
+
         laOca = findViewById(R.id.laOca)
         enunciatGuanyador = findViewById(R.id.enunciatGuanyador)
-        avisFaltaNom = findViewById(R.id.avisFaltaNom)
         btnTirarDau = findViewById(R.id.btnTirarDau)
         tvTornJugador = findViewById(R.id.tvTornJugador)
         daus = findViewById(R.id.daus)
-        btnComençar = findViewById(R.id.btnComençar)
         tvPuntuacioJ1 = findViewById(R.id.tvPuntuacioJ1)
         tvPuntuacioJ2 = findViewById(R.id.tvPuntuacioJ2)
 
+        btnReiniciar = findViewById(R.id.btnReiniciar)
+        btnAbandonar = findViewById(R.id.btnAbandonar)
+
+
         // --- Estat inicial de la UI ---
-        btnComençar.isEnabled = false
-        daus.visibility = View.GONE
-        btnTirarDau.visibility = View.GONE
-        tvTornJugador.visibility = View.GONE
         enunciatGuanyador.visibility = View.GONE
-        avisFaltaNom.visibility = View.VISIBLE
-
-        tvPuntuacioJ1.visibility = View.GONE
-        tvPuntuacioJ2.visibility = View.GONE
 
 
-        // Escoltador per activar el botó de començar partida
-        val textWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val nom1 = etJugador1.text.trim().toString()
-                val nom2 = etJugador2.text.trim().toString()
-                btnComençar.isEnabled = nom1.isNotEmpty() && nom2.isNotEmpty()
-            }
-        }
-        etJugador1.addTextChangedListener(textWatcher)
-        etJugador2.addTextChangedListener(textWatcher)
-
-
-        // Listener per començar la partida
-        btnComençar.setOnClickListener {
+        // REINICIAR: Crida a inicialitzarJoc (Pantalla 4)
+        btnReiniciar.setOnClickListener {
             inicialitzarJoc()
         }
+
+        // ABANDONAR: Torna a la pantalla 1
+        btnAbandonar.setOnClickListener {
+            val intent = Intent(this, WelcomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP // Neteja la pila d'activitats
+            startActivity(intent)
+        }
+
 
         // Listener per tirar el dau
         btnTirarDau.setOnClickListener {
@@ -96,12 +90,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun inicialitzarJoc() {
-        // Amaguem les vistes d'inici
-        // etJugador1.visibility = View.GONE
-        // etJugador2.visibility = View.GONE
-        btnComençar.visibility = View.GONE
-        laOca.visibility = View.GONE
-        avisFaltaNom.visibility = View.GONE
 
         // Mostrem les vistes del joc
         daus.visibility = View.VISIBLE
@@ -110,15 +98,20 @@ class MainActivity : AppCompatActivity() {
         tvPuntuacioJ1.visibility = View.VISIBLE
         tvPuntuacioJ2.visibility = View.VISIBLE
 
+        // Amaguem coses de "final de partida"
+        enunciatGuanyador.visibility = View.GONE
+        laOca.visibility = View.GONE // Amaguem l'oca de "Tira una altra vegada"
+        btnTirarDau.isEnabled = true // Reactivem el botó per si s'ha reiniciat
+
         // Creem els jugadors i el joc
-        val nom1 = etJugador1.text.toString()
-        val nom2 = etJugador2.text.toString()
-        val jugador1 = Jugador(nom1)
-        val jugador2 = Jugador(nom2)
+        val jugador1 = Jugador(nomJugador1)
+        val jugador2 = Jugador(nomJugador2)
         val llistaJugadors = arrayListOf(jugador1, jugador2)
         joc = Joc(llistaJugadors)
 
-
+        // Resetejem puntuacions al reiniciar
+        tvPuntuacioJ1.text = "0"
+        tvPuntuacioJ2.text = "0"
         tvTornJugador.text = "Torn de: ${joc.getJugadorActual().getNom()}"
     }
 
@@ -141,7 +134,16 @@ class MainActivity : AppCompatActivity() {
             enunciatGuanyador.visibility = View.VISIBLE
             btnTirarDau.isEnabled = false
             laOca.visibility = View.GONE
+
+            // Creem l'Intent per a la pantalla final
+            val intentFi = Intent(this, GameOverActivity::class.java)
+            intentFi.putExtra("GUANYADOR", resultat.nomJugador)
+            intentFi.putExtra("NOM_JUGADOR_1", nomJugador1) // Passem els noms
+            intentFi.putExtra("NOM_JUGADOR_2", nomJugador2) // per poder REPETIR
+            startActivity(intentFi)
+            finish() // Tanquem aquesta activitat de joc
             return
+
         }
 
         if (resultat.esOca) {
