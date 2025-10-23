@@ -28,9 +28,9 @@ class Player1Activity : AppCompatActivity() {
             insets
         }
 
-        //Initializing views needed
-        var name1 = findViewById<EditText>(R.id.nameInput1)
-        var btnGoTo2nPlayer = findViewById<Button>(R.id.btnTo2nNom)
+        //Initializing views needed (without var to solve Error Variable Shadowing)
+        name1 = findViewById<EditText>(R.id.nameInput1)
+        btnGoTo2nPlayer = findViewById<Button>(R.id.btnTo2nNom)
 
         //TextWatcher típic per fer funcional el botó Següent
         name1.addTextChangedListener(object : TextWatcher {

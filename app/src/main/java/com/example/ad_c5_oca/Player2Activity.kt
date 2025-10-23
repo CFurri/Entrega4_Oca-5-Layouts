@@ -34,9 +34,9 @@ class Player2Activity : AppCompatActivity() {
         // Per recuperar la info que ve de Player1Activity!
         nomJugador1 = intent.getStringExtra("NOM_JUGADOR_1")
 
-        //Initializing views needed
-        var name2 = findViewById<TextView>(R.id.nameInput2)
-        var btnGoToGame = findViewById<Button>(R.id.btnToGame)
+        //Initializing views needed (without var to solve Error Variable Shadowing)
+        name2 = findViewById<EditText>(R.id.nameInput2)
+        btnGoToGame = findViewById<Button>(R.id.btnToGame)
 
         btnGoToGame.isEnabled = false // Estat inicial
 
