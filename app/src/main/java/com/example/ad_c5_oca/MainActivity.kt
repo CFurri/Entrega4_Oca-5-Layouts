@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         btnTirarDau.setOnClickListener {
             jugarUnTorn()
         }
+        inicialitzarJoc()
     }
 
     private fun inicialitzarJoc() {
